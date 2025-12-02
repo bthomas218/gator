@@ -12,10 +12,14 @@ export function setUser(userName: string) {
 }
 
 export function readConfig() {
-  const configPath = getConfigFilePath();
-  let rawConfig;
-  rawConfig = fs.readFileSync(configPath, { encoding: "utf-8" });
-  return validateConfig(JSON.parse(rawConfig));
+  try {
+    const configPath = getConfigFilePath();
+    let rawConfig;
+    rawConfig = fs.readFileSync(configPath, { encoding: "utf-8" });
+    return validateConfig(JSON.parse(rawConfig));
+  } catch (error) {
+    console.error(`Failed to read config: ${error}`);
+  }
 }
 
 function getConfigFilePath(): string {
@@ -24,12 +28,16 @@ function getConfigFilePath(): string {
 }
 
 function writeConfig(cfg: Config) {
-  const configPath = getConfigFilePath();
-  const { dbUrl: db_url, currentUserName: current_user_name } = cfg;
-  fs.writeFileSync(
-    configPath,
-    JSON.stringify({ db_url: db_url, current_user_name: current_user_name })
-  );
+  try {
+    const configPath = getConfigFilePath();
+    const { dbUrl: db_url, currentUserName: current_user_name } = cfg;
+    fs.writeFileSync(
+      configPath,
+      JSON.stringify({ db_url: db_url, current_user_name: current_user_name })
+    );
+  } catch (err) {
+    throw new Error(`Failed to write config: ${err}`);
+  }
 }
 
 function validateConfig(rawConfig: any) {
