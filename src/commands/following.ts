@@ -10,6 +10,7 @@ import {
 import { Feed, User } from "src/lib/db/schema";
 import {
   createFeedFollow,
+  deleteFeedFollow,
   getFeedFollowsForUser,
   getUserAndFeed,
 } from "src/lib/db/queries/feedFollows";
@@ -63,8 +64,8 @@ export async function handlerFollow(
   });
   const { userName, feedName } = await getUserAndFeed(feedFollow.id);
   console.log("Created feed-follow:", feedFollow);
-  console.log(`Feed name: ${feedName}`);
-  console.log(`User name: ${userName}`);
+  console.log(`\t* Feed name: ${feedName}`);
+  console.log(`\t* User name: ${userName}`);
 }
 
 function printFeed(feed: Feed, user: User) {
@@ -81,4 +82,23 @@ export async function handlerFollowing(
   following.forEach((f) => {
     console.log(`* ${f.feedName}`);
   });
+}
+
+export async function handlerUnfollow(
+  cmdName: string,
+  user: User,
+  ...args: string[]
+) {
+  if (args.length !== 1) {
+    throw new Error("Usage: unfollow <url>");
+  }
+  const feedURL = args[0];
+
+  const feed = await getFeedbyURL(feedURL);
+  if (!feed) {
+    throw new Error("Feed not added");
+  }
+
+  await deleteFeedFollow({ userId: user.id, feedId: feed.id });
+  console.log(`${user.name} unfollowed from feed: ${feed.name} `);
 }
