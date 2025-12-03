@@ -4,8 +4,8 @@
 
 import { readConfig } from "src/config";
 import { fetchFeed } from "../lib/rss";
-import { getUserByName } from "src/lib/db/queries/users";
-import { createFeed } from "src/lib/db/queries/feeds";
+import { getUserById, getUserByName } from "src/lib/db/queries/users";
+import { createFeed, getAllFeeds } from "src/lib/db/queries/feeds";
 import { Feed, User } from "src/lib/db/schema";
 
 export async function handlerAgg(cmdName: string, ...args: string[]) {
@@ -27,6 +27,19 @@ export async function handlerAddFeed(cmdName: string, ...args: string[]) {
   const user = await getUserByName(currentUserName);
   const feed = await createFeed({ name: name, url: url, userId: user.id });
   printFeed(feed, user);
+}
+
+export async function handlerFeeds(cmdName: string, ...args: string[]) {
+  const feeds = await getAllFeeds();
+  for (const feed of feeds) {
+    if (!feed.userId) {
+      continue;
+    }
+    const user = await getUserById(feed.userId);
+    console.log(
+      `Feed: ${feed.name}\n\t-URL: ${feed.url}\n\t-User: ${user.name}`
+    );
+  }
 }
 
 function printFeed(feed: Feed, user: User) {

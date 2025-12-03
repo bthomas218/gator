@@ -5,3 +5,8 @@ export async function createFeed(feed: NewFeed) {
   const [result] = await db.insert(feeds).values(feed).returning();
   return result;
 }
+
+export async function getAllFeeds() {
+  const result = await db.select().from(feeds);
+  return result;
+}
