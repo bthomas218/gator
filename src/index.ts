@@ -1,10 +1,10 @@
+import { handlerAgg } from "./commands/aggregate";
 import {
   handlerAddFeed,
-  handlerAgg,
   handlerFeeds,
   handlerFollow,
   handlerFollowing,
-} from "./commands/aggregate";
+} from "./commands/following";
 import {
   registerCommand,
   runCommand,
