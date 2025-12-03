@@ -1,5 +1,5 @@
 import { db } from "../index";
-import { FeedFollow, feeds, NewFeedFollow, users } from "../schema";
+import { feeds, NewFeedFollow, users } from "../schema";
 import { feedFollows } from "../schema";
 import { eq } from "drizzle-orm";
 

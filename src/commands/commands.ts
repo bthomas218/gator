@@ -1,3 +1,4 @@
+import { User } from "../lib/db/schema";
 export type CommandHandler = (
   cmdName: string,
   ...args: string[]
@@ -23,3 +24,9 @@ export async function runCommand(
     throw new Error("Command not registered");
   }
 }
+
+export type UserCommandHandler = (
+  cmdName: string,
+  user: User,
+  ...args: string[]
+) => Promise<void>;

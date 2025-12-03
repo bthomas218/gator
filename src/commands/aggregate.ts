@@ -22,18 +22,16 @@ export async function handlerAgg(cmdName: string, ...args: string[]) {
   console.dir(feed, { depth: null });
 }
 
-export async function handlerAddFeed(cmdName: string, ...args: string[]) {
+export async function handlerAddFeed(
+  cmdName: string,
+  user: User,
+  ...args: string[]
+) {
   if (args.length !== 2) {
     throw new Error("Usage: addfeed <name> <url>");
   }
 
-  const { currentUserName } = readConfig();
-  if (!currentUserName) {
-    throw new Error("No user logged in");
-  }
-
   const [name, url] = args;
-  const user = await getUserByName(currentUserName);
   const feed = await createFeed({ name: name, url: url, userId: user.id });
   await createFeedFollow({ userId: user.id, feedId: feed.id });
   printFeed(feed, user);
@@ -52,26 +50,24 @@ export async function handlerFeeds(cmdName: string, ...args: string[]) {
   }
 }
 
-export async function handlerFollow(cmdName: string, ...args: string[]) {
+export async function handlerFollow(
+  cmdName: string,
+  user: User,
+  ...args: string[]
+) {
   if (args.length !== 1) {
     throw new Error("Usage: follow <url>");
   }
   const feedURL = args[0];
 
-  const { currentUserName } = readConfig();
-  if (!currentUserName) {
-    throw new Error("No user logged in");
-  }
-  const currentUser = await getUserByName(currentUserName);
-
-  const feedToAdd = await getFeedbyURL(feedURL);
-  if (!feedToAdd) {
+  const feed = await getFeedbyURL(feedURL);
+  if (!feed) {
     throw new Error("Feed not added");
   }
 
   const feedFollow = await createFeedFollow({
-    userId: currentUser.id,
-    feedId: feedToAdd.id,
+    userId: user.id,
+    feedId: feed.id,
   });
   const { userName, feedName } = await getUserAndFeed(feedFollow.id);
   console.log("Created feed-follow:", feedFollow);
@@ -84,13 +80,12 @@ function printFeed(feed: Feed, user: User) {
   console.log("Feed:", feed);
 }
 
-export async function handlerFollowing(cmdName: string, ...args: string[]) {
-  const { currentUserName } = readConfig();
-  if (!currentUserName) {
-    throw new Error("No user logged in");
-  }
-  const currentUser = await getUserByName(currentUserName);
-  const following = await getFeedFollowsForUser(currentUser.id);
+export async function handlerFollowing(
+  cmdName: string,
+  user: User,
+  ...args: string[]
+) {
+  const following = await getFeedFollowsForUser(user.id);
   following.forEach((f) => {
     console.log(`* ${f.feedName}`);
   });
