@@ -16,3 +16,8 @@ export async function getUserByName(name: string) {
 export async function deleteAllUsers() {
   await db.execute("TRUNCATE TABLE users cascade");
 }
+
+export async function getAllUsers() {
+  const result = await db.select().from(users);
+  return result;
+}

@@ -1,8 +1,12 @@
-import { setUser } from "../config";
+/**
+ * Commands relating to users
+ */
+import { setUser, readConfig } from "../config";
 import {
   getUserByName,
   createUser,
   deleteAllUsers,
+  getAllUsers,
 } from "../lib/db/queries/users";
 
 export async function handlerLogin(cmdName: string, ...args: string[]) {
@@ -37,4 +41,12 @@ export async function handlerReset(cmdName: string, ...args: string[]) {
   } catch (err) {
     throw err;
   }
+}
+
+export async function handlerUsers(cmdName: string, ...args: string[]) {
+  const { currentUserName } = readConfig();
+  const users = await getAllUsers();
+  users.forEach((u) =>
+    console.log(`* ${u.name}${u.name === currentUserName ? " (current)" : ""}`)
+  );
 }
