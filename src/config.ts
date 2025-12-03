@@ -1,6 +1,7 @@
 import fs from "fs";
 import os from "os";
 import path from "path";
+import { exit } from "process";
 
 type Config = {
   dbUrl: string;
@@ -8,7 +9,11 @@ type Config = {
 };
 
 export function setUser(userName: string) {
-  writeConfig({ dbUrl: "postgres://example", currentUserName: userName });
+  const cfg = readConfig();
+  writeConfig({
+    dbUrl: cfg.dbUrl,
+    currentUserName: userName,
+  });
 }
 
 export function readConfig() {
@@ -19,6 +24,7 @@ export function readConfig() {
     return validateConfig(JSON.parse(rawConfig));
   } catch (error) {
     console.error(`Failed to read config: ${error}`);
+    exit(1);
   }
 }
 
@@ -36,7 +42,8 @@ function writeConfig(cfg: Config) {
       JSON.stringify({ db_url: db_url, current_user_name: current_user_name })
     );
   } catch (err) {
-    throw new Error(`Failed to write config: ${err}`);
+    console.error(`Failed to write config: ${err}`);
+    exit(1);
   }
 }
 
@@ -59,5 +66,6 @@ function validateConfig(rawConfig: any) {
       } as Config;
     }
   }
-  console.error("Invalid Config");
+  console.error("Error: Invalid Config");
+  exit(1);
 }
