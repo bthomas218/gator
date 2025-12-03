@@ -1,3 +1,4 @@
+import { handlerAgg } from "./commands/aggregate";
 import {
   registerCommand,
   runCommand,
@@ -18,6 +19,7 @@ async function main() {
     registerCommand(registry, "register", handlerRegister);
     registerCommand(registry, "reset", handlerReset);
     registerCommand(registry, "users", handlerUsers);
+    registerCommand(registry, "agg", handlerAgg);
 
     const [cmdName, ...args] = process.argv.slice(2);
     if (!cmdName) {
