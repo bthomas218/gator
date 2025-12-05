@@ -1,4 +1,4 @@
-import { handlerAgg } from "./commands/aggregate";
+import { handlerAgg, handlerBrowse } from "./commands/aggregate";
 import {
   handlerAddFeed,
   handlerFeeds,
@@ -37,6 +37,7 @@ async function main() {
       middlewareLoggedIn(handlerFollowing)
     );
     registerCommand(registry, "unfollow", middlewareLoggedIn(handlerUnfollow));
+    registerCommand(registry, "browse", middlewareLoggedIn(handlerBrowse));
 
     const [cmdName, ...args] = process.argv.slice(2);
     if (!cmdName) {

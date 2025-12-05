@@ -1,10 +1,10 @@
 /**
  * Commands relating to aggregation
  */
-import { db } from "src/lib/db";
+import { createPost, getPostsForUser } from "src/lib/db/queries/posts";
 import { fetchFeed } from "../lib/rss";
 import { getNextFeedtoFetch, markFeedFetched } from "src/lib/db/queries/feeds";
-import { exit } from "process";
+import { NewPost, User } from "src/lib/db/schema";
 
 export async function handlerAgg(cmdName: string, ...args: string[]) {
   if (args.length !== 1) {
@@ -16,7 +16,7 @@ export async function handlerAgg(cmdName: string, ...args: string[]) {
     throw new Error("Invalid duration string");
   }
 
-  console.log(`Collecting feeds every ${timeBetweenReqs}`);
+  console.log(`Collecting feeds every ${timeBetweenReqs}ms`);
 
   scrapeFeeds().catch(errorHandler);
 
@@ -33,6 +33,31 @@ export async function handlerAgg(cmdName: string, ...args: string[]) {
   });
 }
 
+export async function handlerBrowse(
+  cmdName: string,
+  user: User,
+  ...args: string[]
+) {
+  let limit;
+  if (args.length > 0) {
+    limit = parseInt(args[0], 10);
+    if (isNaN(limit)) {
+      throw new Error("Usage: browse [limit]");
+    }
+  }
+
+  const posts = await getPostsForUser(user.id, limit ?? 2);
+
+  console.log(`Got ${posts.length} posts for ${user.name}`);
+  posts.forEach((p) => {
+    console.log(`Title: ${p.title}`);
+    console.log(`\t* Feed: ${p.feedName}`);
+    console.log(`\t* Published: ${p.publishedAt}`);
+    console.log(`\t* url: ${p.url}`);
+    console.log(`${p.description}`);
+  });
+}
+
 async function scrapeFeeds() {
   const feed = await getNextFeedtoFetch();
 
@@ -41,14 +66,17 @@ async function scrapeFeeds() {
   }
 
   markFeedFetched(feed.id);
-  const feedChannel = await fetchFeed(feed.url);
+  const feedChannel = (await fetchFeed(feed.url)).channel;
 
-  console.log(
-    `${feed.name} collected, ${feedChannel.channel.item.length} posts found`
-  );
-  feedChannel.channel.item.forEach((i) => {
-    console.log(`\t* ${i.title}`);
-  });
+  for (const item of feedChannel.item) {
+    await createPost({
+      url: item.link,
+      title: item.title,
+      description: item.description,
+      publishedAt: new Date(item.pubDate),
+      feedId: feed.id,
+    } satisfies NewPost);
+  }
 }
 
 function parseDuration(durationStr: string) {
